@@ -2,8 +2,6 @@ import win32com.client
 import datetime
 import re
 from docxtpl import DocxTemplate
-import docx2pdf
-import math
 
 
 def check_for_new_vcon_emails():
@@ -57,16 +55,24 @@ def check_for_new_vcon_emails():
     #            issue_date_pattern = r'(?:Dated(?:\sDate)?\s*:?\s*|Daté\s*:?\s*|(?:Dated\sDate)?\s*:?\s*)(\d{2}/\d{2}/\d{2})'
                 # issue_date_pattern = r'(?:Dated|Daté|(?:Dated\sDate))\s*:\s*(\d{2}/\d{2}/\d{2})'
                # settle_date_pattern = r'((?:Dated\sDate)|?:Dated|Daté)\s*:\s*(\d{2}/\d{2}/\d{2,4})'
-                settle_date_pattern = r'(?:Settlement|Règlement)\s*:\s*(\d{1,2}/\d{1,2}/\d{2}(\d{2,4})?)' 
+                settle_date_pattern = r'(?:Settlement|Règlement)\s*:\s*(\d{2}/\d{2}/\d{2,4})'
                 # trade_date_pattern = r'Trade Date\s*:\s*(\d{2}/\d{2}/\d{2})'
-                trade_date_pattern = r'(?:Trade\sDate|(?:As+\sof+\sDate)|(?:Transaction))\s*:\s*(\d{1,2}/\d{1,2}/\d{2}(\d{2,4})?)' 
+                trade_date_pattern = r'(?:Trade\sDate|(?:As\sof\sDate)|(?:Transaction))\s*:\s*(\d{2}/\d{2}/\d{2,4})'
                 total_pattern = r'(?:BUYS|ACHETE)\s*:\s*(\d+(?:,\d+)*M?)\b' 
                 maturity_date_pattern = r'ENI\s+0\s+(\d{2}/\d{2}/\d{2})'  
                 yield_pattern = r'\s*(?:Yield|Rdt)\s*:\s*([\d\.]+)'
                 price_pattern = r'\s*(?:Price|Prix)\s*:\s*([\d\.]+)' 
+                
+
+
                 dealer_pattern = re.search(r'\((.*?)\)', email_body)
 
  
+
+                proceeds_pattern = r'Proceeds Payable to the Issuer\s*\:\s*([\d\.,]+)\s+EUR'
+
+
+
 
 
 
@@ -93,7 +99,7 @@ def check_for_new_vcon_emails():
                     trade_data['dealerCode'] = "Euroclear 94589"
                     trade_data['dealerFull'] = "Goldman Sachs International"
                     trade_data['dealerShort'] = "GS"
-                elif dealer_pattern.group(1)  in ("BNP PARIBAS FORTIS", "BNP PARIBAS"):
+                elif dealer_pattern.group(1) == "BNP PARIBAS FORTIS":
                     trade_data['dealerCode'] = "Euroclear 99290"
                     trade_data['dealerFull'] = "BNP Paribas"
                     trade_data['dealerShort'] = "BNP"
@@ -113,11 +119,6 @@ def check_for_new_vcon_emails():
                     trade_data['dealerCode'] = "Euroclear 22529" 
                     trade_data['dealerFull'] = "ING Bank N.V."
                     trade_data['dealerShort'] = "ING"        
-                elif dealer_pattern.group(1) == "BARCLAYS BANK PLC":
-                    trade_data['dealerCode'] = "Clearstream 21864" 
-                    trade_data['dealerFull'] = "Barclays Bank Ireland PLC"
-                    trade_data['dealerShort'] = "BARCLAYS"     
-
                 # ... add more elif blocks for other mappings ...
                 else:
                     # Default value if no match 
@@ -161,13 +162,6 @@ def check_for_new_vcon_emails():
                 # Save the changes
                 doc.save('updated_prova.docx') 
                # doc.save(str(trade_data['issue_date']) + str(trade_data['dealerShort']) + str(trade_data['total']) + '.docx')
-               # Convert to PDF
-#                docx2pdf.convert("updated_prova.docx", str(trade_data['trade_date']+trade_data['dealerShort']+trade_data['total']+trade_data['yield'])+".pdf")
-             #   docx2pdf.convert("updated_prova.docx", "prova.pdf")
-                def format_total(total_value):
-                    return str(total_value).replace(",000,000.00", "M")
-                filename = "{}_{}_{}.pdf".format(trade_data['dealerShort'], format_total(trade_data['total']), trade_data['yield'])
-                docx2pdf.convert("updated_prova.docx", filename)
 
             
             # except AttributeError:
