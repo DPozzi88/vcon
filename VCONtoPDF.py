@@ -5,6 +5,9 @@ from docxtpl import DocxTemplate
 import docx2pdf
 import math
 import os
+import logging  # For improved error handling
+
+logging.basicConfig(filename='date_errors.log', level=logging.WARNING)
 
 def check_for_new_vcon_emails():
     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
@@ -13,23 +16,27 @@ def check_for_new_vcon_emails():
     messages = inbox.Items 
 
 
-    def format_date(date_str, original_format='%m/%d/%Y', target_format='%d/%m/%y'):
-        """Converts a date string from one format to another.
+    def format_date(date_str, original_formats, target_format='%d/%m/%y'):
+        """Handles multiple date formats with error logging.
 
         Args:
             date_str: The input date string.
-            original_format: The format of the input date string.
+            original_formats: A list of possible input formats (e.g., ['%m/%d/%Y', '%d-%m-%y', '%B %d, %Y'])
             target_format: The desired output format.
 
         Returns:
-            The reformatted date string.
+            The reformatted date string or None if conversion fails.
         """
-        try:
-            dt = datetime.datetime.strptime(date_str, original_format)
-            return dt.strftime(target_format)
-        except ValueError:
-            print(f"Error: Could not convert date '{date_str}' with format '{original_format}'")
-            return date_str  # Return the original value if conversion fails
+        for fmt in original_formats:
+            try:
+                dt = datetime.datetime.strptime(date_str, fmt)
+                return dt.strftime(target_format)
+            except ValueError:
+                pass  # Try the next format
+
+        # Log the error if all formats fail
+        logging.warning(f"Error: Could not convert date '{date_str}' with formats {original_formats}")
+        return None
 
 
 
@@ -74,17 +81,28 @@ def check_for_new_vcon_emails():
                 
                 # Extract and store data in a dictionary
                 trade_data = {}
-
+                possible_date_formats = ['%m/%d/%y','%m/%d/%Y', '%d/%m/%y', '%d/%m/%Y', '%B/%d/%Y']  # Expanded formats 
+               
+                
                 trade_data['currency'] = re.search(currency_pattern, email_body).group(1)
                 trade_data['principal'] = re.search(principal_pattern, email_body).group(1)
-                trade_data['settle_date'] = datetime.datetime.strptime(re.search(settle_date_pattern, email_body).group(1), "%m/%d/%y").strftime("%d/%m/%y") 
+
+                trade_data['settle_date'] = format_date(re.search(settle_date_pattern, email_body).group(1), possible_date_formats)
+                
+                print(email_body)
+                print(trade_data['settle_date'])
+                
+                trade_data['trade_date'] = format_date(re.search(trade_date_pattern, email_body).group(1), possible_date_formats)
+                trade_data['maturity_date'] = format_date(re.search(maturity_date_pattern, email_body).group(1), possible_date_formats)
+
+                # trade_data['settle_date'] = datetime.datetime.strptime(re.search(settle_date_pattern, email_body).group(1), "%m/%d/%y").strftime("%d/%m/%y") 
                 # trade_data['issue_date'] = re.search(issue_date_pattern, email_body).group(1)
                 #trade_data['issue_date'] = datetime.datetime.strptime(re.search(issue_date_pattern, email_body).group(1), '%d/%m/%Y').strftime('%d/%m/%y')
                 # trade_data['trade_date'] = re.search(trade_date_pattern, email_body).group(1)
-                trade_data['trade_date'] = datetime.datetime.strptime(format_date(re.search(trade_date_pattern, email_body).group(1)), "%m/%d/%y").strftime("%d/%m/%y") 
+                # trade_data['trade_date'] = datetime.datetime.strptime(format_date(re.search(trade_date_pattern, email_body).group(1)), "%m/%d/%y").strftime("%d/%m/%y") 
                 trade_data['total'] = convert_total(re.search(total_pattern, email_body).group(1))
                 # trade_data['maturity_date'] = re.search(maturity_date_pattern, email_body).group(1)
-                trade_data['maturity_date'] = datetime.datetime.strptime(format_date(re.search(maturity_date_pattern, email_body).group(1)), "%m/%d/%y").strftime("%d/%m/%y") 
+                # trade_data['maturity_date'] = datetime.datetime.strptime(format_date(re.search(maturity_date_pattern, email_body).group(1)), "%m/%d/%y").strftime("%d/%m/%y") 
                 trade_data['yield'] = f"{float(re.search(yield_pattern, email_body).group(1))}%"
                 trade_data['price'] = re.search(price_pattern, email_body).group(1)
 
@@ -137,7 +155,7 @@ def check_for_new_vcon_emails():
                     print(f"{key}: {value}")
 
 
-                doc = DocxTemplate('CITI_Template.docx')
+                doc = DocxTemplate('ECP_Template.docx')
 
                 # Prepare the data to replace the bookmark 
                 context = {
