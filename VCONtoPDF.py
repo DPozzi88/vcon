@@ -188,6 +188,7 @@ def check_for_new_vcon_emails():
                 filename = "{}_{}_{}.pdf".format(trade_data['dealerShort'], format_total(trade_data['total']), trade_data['yield'])
                 doc.save(filename[:-4]+'.docx') 
                 docx2pdf.convert("updated_prova.docx", filename)
+                docx2pdf.convert("R:\Pozzi\updated_prova.docx", filename)
                 
             
             # except AttributeError:
@@ -198,6 +199,21 @@ def check_for_new_vcon_emails():
             
             break
                 
-            
+    # Email sending part
+    outlook = win32com.client.Dispatch("Outlook.Application")
+    mail = outlook.CreateItem(0)  # 0: olMailItem
+
+    mail.To = "dario.pozzi@eni.com"
+    mail.Subject = f"{trade_data['total']}+{trade_data['maturity_date']}"
+    mail.Body = f"Emessa ECP con la controparte {trade_data['dealerFull']}per un ammontare di {trade_data['total']} e scadenza {trade_data['maturity_date']}"
+
+    # Attach the PDF
+    attachment_path = os.path.abspath(filename)  # Get the absolute path of the PDF
+    mail.Attachments.Add(Source=attachment_path)
+
+    mail.Send()
+    print("Email sent successfully!")
+
+
 check_for_new_vcon_emails()
 
