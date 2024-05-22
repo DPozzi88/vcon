@@ -142,13 +142,13 @@ def check_for_new_vcon_emails():
                 doc.render(context)
 
                 # Save 
-                doc.save('updated_prova.docx') 
+                doc.save('Update.docx') 
                 def format_total(total_value):
                     return str(total_value).replace(",000,000.00", "M")
                 filename = "{}_{}_{}.pdf".format(trade_data['dealerShort'], format_total(trade_data['total']), trade_data['yield'])
                 doc.save(filename[:-4]+'.docx') 
-                docx2pdf.convert("updated_prova.docx", filename)
-                docx2pdf.convert("updated_prova.docx", destination_directory+"/"+filename)
+                docx2pdf.convert("Update.docx", filename)
+                docx2pdf.convert("Update.docx", destination_directory+"/"+filename)
                 email_filename = f"{trade_data['dealerShort']}_{format_total(trade_data['total'])}_{trade_data['yield']}.msg"
                 email_path = os.path.join(destination_directory, email_filename)
                 message.SaveAs(email_path)
@@ -163,7 +163,9 @@ def check_for_new_vcon_emails():
     outlook = win32com.client.Dispatch("Outlook.Application")
     mail = outlook.CreateItem(0)  
 
-    mail.To = "TREASURY@eni.com; Fabio.Valerio@eni.com"#"dario.pozzi@eni.com;"
+
+    # mail.To = "dario.pozzi@eni.com;"
+    mail.To = "TREASURY@eni.com; Fabio.Valerio@eni.com"
     mail.CC = "Paolo.Ferla@eni.com; Paolo.Barra@eni.com, Derivatives.Backoffice@eni.com"
     mail.Subject = f"Emissione Nuova ECP"
     
@@ -213,8 +215,8 @@ def check_for_new_vcon_emails():
         </tbody>
     </table>
 
-    Trovi il modulo da firmare e la relativa email di conferma nella cartella di scambio.
-
+    Trovi il modulo da firmare e la relativa email di conferma nella cartella di scambio:
+    Trovi il modulo da firmare (e la relativa mail di conferma) nella <a href="file:///\\Ennf1001\scambio\ECP Eni SpA">cartella di scambio</a>.
     <p>
 
 
