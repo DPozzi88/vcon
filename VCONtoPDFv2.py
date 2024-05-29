@@ -163,8 +163,10 @@ def check_for_new_vcon_emails():
     outlook = win32com.client.Dispatch("Outlook.Application")
     mail = outlook.CreateItem(0)  
 
-    mail.To = "TREASURY@eni.com; Fabio.Valerio@eni.com"#"dario.pozzi@eni.com;"
-    mail.CC = "Paolo.Ferla@eni.com; Paolo.Barra@eni.com, Derivatives.Backoffice@eni.com"
+
+    mail.To = "dario.pozzi@eni.com;"
+    # mail.To = "TREASURY@eni.com; Fabio.Valerio@eni.com"
+    # mail.CC = "Paolo.Ferla@eni.com; Paolo.Barra@eni.com, Derivatives.Backoffice@eni.com"
     mail.Subject = f"Emissione Nuova ECP"
     
 

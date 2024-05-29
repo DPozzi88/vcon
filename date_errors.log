@@ -1,0 +1,2 @@
+ERROR:root:[2024-05-29 13:21:00.709146] Error saving 'BNP_100M_3.96%.pdf' or email: (-2147352567, 'Exception occurred.', (0, 'Microsoft Word', 'Command failed', 'wdmain11.chm', 36966, -2146824090), None)
+ERROR:root:[2024-05-29 13:21:24.158131] Error saving 'BNP_100M_3.96%.pdf' or email: (-2147352567, 'Exception occurred.', (0, 'Microsoft Word', 'Command failed', 'wdmain11.chm', 36966, -2146824090), None)
